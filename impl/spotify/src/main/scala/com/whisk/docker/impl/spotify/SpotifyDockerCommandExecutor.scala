@@ -28,8 +28,13 @@ class SpotifyDockerCommandExecutor(override val host: String, client: DockerClie
       case (port, None) =>
         port.toString -> Collections.singletonList(PortBinding.randomPort("0.0.0.0"))
     }
+    val binds: Seq[String] = spec.volumeMappings.map{
+      volumeMapping =>
+        val rw = if(volumeMapping.rw) ":rw" else ""
+        volumeMapping.host + ":" + volumeMapping.container + rw
+    }
 
-    val hostConfig = HostConfig.builder().portBindings(portBindings.asJava).build()
+    val hostConfig = HostConfig.builder().portBindings(portBindings.asJava).binds(binds.asJava).build()
 
     val builder = ContainerConfig
       .builder()
